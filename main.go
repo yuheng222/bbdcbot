@@ -91,16 +91,12 @@ func main() {
 
 			sessionNum := bookingData[3]
 			validSlot := false
-			if (strings.Contains(day, "Sat") || strings.Contains(day, "Sun")) && (monthInt == "02" || monthInt == "03" || monthInt == "04" || monthInt == "05") {
-				alert("Slot available on "+day+" from "+bookingData[4]+" to "+bookingData[5],
-					bot, chatID)
-				foundSlot = true
-				validSlot = true
-			} else if (monthInt == "02" || monthInt == "03" || monthInt == "04") && (sessionNum == "\"7\"" || sessionNum == "\"8\"") {
-				alert("Slot available on "+day+" from "+bookingData[4]+" to "+bookingData[5],
-					bot, chatID)
-				foundSlot = true
-				validSlot = true
+			if (strings.Contains(day, "Wed") || strings.Contains(day, "Fri") || strings.Contains(day, "Sat")) && (monthInt == "09" || monthInt == "10") {
+				alert("Slot available on "+day+" from "+bookingData[4]+" to "+bookingData[5], bot, chatID)
+				if sessionNum != `"1"` {
+					foundSlot = true
+					validSlot = true
+				}
 			}
 
 			if validSlot {
