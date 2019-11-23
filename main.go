@@ -47,12 +47,15 @@ func main() {
 		err = logIn(os.Getenv("NRIC"), os.Getenv("PASSWORD"), client)
 		errCheck(err, "Error logging in")
 
+		log.Println("Fetching slots")
 		rawSlots, err := slotPage(os.Getenv("ACCOUNT_ID"), client)
 		errCheck(err, "Error getting slot page")
 
+		log.Println("Parsing slots")
 		slots, err := extractSlots(rawSlots)
 		errCheck(err, "Error parsing slot page")
 
+		log.Println("Extracting valid slots")
 		valids := validSlots(slots)
 		for _, validSlot := range valids { //for all the slots which meet the rule (i.e. within 10 days of now)
 			tgclient.MessageAll("Slot available on " + validSlot.Date.Format("2 Jan 2006 (Mon)") + " " + os.Getenv("SESSION_"+validSlot.SessionNumber))
