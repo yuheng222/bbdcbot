@@ -55,7 +55,7 @@ func main() {
 
 		valids := validSlots(slots)
 		for _, validSlot := range valids { //for all the slots which meet the rule (i.e. within 10 days of now)
-			tgclient.MessageAll("Slot available on " + validSlot.Date.Format("_2 Jan 2006 (Mon)") + " " + os.Getenv("SESSION_"+validSlot.SessionNumber))
+			tgclient.MessageAll("Slot available on " + validSlot.Date.Format("2 Jan 2006 (Mon)") + " " + os.Getenv("SESSION_"+validSlot.SessionNumber))
 		}
 		if len(valids) != 0 {
 			tgclient.MessageAll("Finished getting slots")
