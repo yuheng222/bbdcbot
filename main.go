@@ -58,12 +58,15 @@ func main() {
 		log.Println("Extracting valid slots")
 		valids := validSlots(slots)
 		for _, validSlot := range valids { //for all the slots which meet the rule (i.e. within 10 days of now)
-			tgclient.MessageAll("Slot available on " + validSlot.Date.Format("2 Jan 2006 (Mon)") + " " + os.Getenv("SESSION_"+validSlot.SessionNumber))
+			log.Println("SlotID: " + validSlot.SlotID)
+			book(os.Getenv("ACCOUNT_ID"), validSlot, client)
+			tgclient.MessageAll("Slot available (and booked) on " + validSlot.Date.Format("2 Jan 2006 (Mon)") + " " + os.Getenv("SESSION_"+validSlot.SessionNumber))
 		}
 		if len(valids) != 0 {
 			tgclient.MessageAll("Finished getting slots")
 		}
 
+		log.Println("Finished getting slots")
 		r := rand.Intn(300) + 120
 		time.Sleep(time.Duration(r) * time.Second)
 	}
@@ -86,6 +89,21 @@ func validSlots(slots []DrivingSlot) []DrivingSlot {
 	return valids
 }
 
+func book(accountID string, slot DrivingSlot, client *http.Client) error {
+	req, err := http.NewRequest("POST", "http://www.bbdc.sg/bbdc/b-3c-pLessonBookingDetails.asp",
+		strings.NewReader(paymentForm(accountID, slot.SlotID).Encode()))
+	if err != nil {
+		return errors.New("Error creating request: " + err.Error())
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	_, err = client.Do(req)
+	if err != nil {
+		return errors.New("Error sending request: " + err.Error())
+	}
+
+	return nil
+}
+
 type myjar struct {
 	jar map[string][]*http.Cookie
 }
@@ -104,6 +122,7 @@ func (p *myjar) Cookies(u *url.URL) []*http.Cookie {
 
 // DrivingSlot represents a CDC slot to go for driving lessons
 type DrivingSlot struct {
+	SlotID        string
 	Date          time.Time
 	SessionNumber string
 }
@@ -169,7 +188,13 @@ func extractSlots(slotPage string) ([]DrivingSlot, error) {
 		if err != nil {
 			return nil, errors.New("Error parsing date: " + err.Error())
 		}
-		slots = append(slots, DrivingSlot{Date: day, SessionNumber: sessionNum})
+
+		//need to get slot ID for auto-book
+		//strings.Split(substr, ",") returns- "BBDC"); SetMouseOverToggleColor("cell145_2") ' onmouseout='hideTip(); SetMouseOverToggleColor("cell145_2")'><input type="checkbox" id="145_2" name="slot" value="1893904" onclick="SetCountAndToggleColor('cell145_2'
+		//splitting on value= and taking the second element returns- "1893904" onclick="SetCountAndToggleColor('cell145_2'
+		//then split on " and take the second element to get 1893904
+		slotID := strings.Split(strings.Split(strings.Split(slotSection, ",")[6], "value=")[1], "\"")[1]
+		slots = append(slots, DrivingSlot{SlotID: slotID, Date: day, SessionNumber: sessionNum})
 	}
 
 	return slots, nil
@@ -205,19 +230,9 @@ func loadEnvironmentalVariables() {
 	}
 }
 
-func fetchCookies() (*http.Cookie, *http.Cookie) {
-	resp, err := http.Get("http://www.bbdc.sg/bbweb/default.aspx")
-	errCheck(err, "Error fetching cookies")
-	aspxanon := resp.Cookies()[0]
-	resp, err = http.Get("http://www.bbdc.sg/bbdc/bbdc_web/newheader.asp")
-	errCheck(err, "Error fetching cookies (sessionID)")
-	sessionID := resp.Cookies()[0]
-	return aspxanon, sessionID
-}
-
-func paymentForm(slotID string) url.Values {
+func paymentForm(accountID string, slotID string) url.Values {
 	form := url.Values{}
-	form.Add("accId", os.Getenv("ACCOUNT_ID"))
+	form.Add("accId", accountID)
 	form.Add("slot", slotID)
 
 	return form
