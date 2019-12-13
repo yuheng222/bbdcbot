@@ -59,7 +59,7 @@ func main() {
 		valids := validSlots(slots)
 		for _, validSlot := range valids { //for all the slots which meet the rule (i.e. within 10 days of now)
 			log.Println("SlotID: " + validSlot.SlotID)
-			book(os.Getenv("ACCOUNT_ID"), validSlot, client)
+			//book(os.Getenv("ACCOUNT_ID"), validSlot, client)
 			tgclient.MessageAll("Slot available (and booked) on " + validSlot.Date.Format("2 Jan 2006 (Mon)") + " " + os.Getenv("SESSION_"+validSlot.SessionNumber))
 		}
 		if len(valids) != 0 {
