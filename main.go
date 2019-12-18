@@ -59,8 +59,8 @@ func main() {
 		valids := validSlots(slots)
 		for _, validSlot := range valids { //for all the slots which meet the rule (i.e. within 10 days of now)
 			log.Println("SlotID: " + validSlot.SlotID)
-			//book(os.Getenv("ACCOUNT_ID"), validSlot, client)
-			tgclient.MessageAll("Slot available (but NOT booked) on " + validSlot.Date.Format("2 Jan 2006 (Mon)") + " " + os.Getenv("SESSION_"+validSlot.SessionNumber))
+			book(os.Getenv("ACCOUNT_ID"), validSlot, client)
+			tgclient.MessageAll("Slot available and booked on " + validSlot.Date.Format("2 Jan 2006 (Mon)") + " " + os.Getenv("SESSION_"+validSlot.SessionNumber))
 		}
 		if len(valids) != 0 {
 			tgclient.MessageAll("Finished getting slots")
@@ -78,12 +78,11 @@ func validSlots(slots []DrivingSlot) []DrivingSlot {
 	valids := make([]DrivingSlot, 0)
 	for _, slot := range slots {
 		if slot.Date.Sub(time.Now()) < 10*(24*time.Hour) { // if slot is within 10 days of now
-			valids = append(valids, slot)
-			//if slot.Date.Sub(time.Now()) > 1*(24*time.Hour) { // if slot is more than 24 hours from now
-			//if slot.SessionNumber != "1" { // slot can't be today
-			//
-			//}
-			//}
+			if slot.Date.Sub(time.Now()) > 12*time.Hour) { // if slot is more than 12 hours from now
+				if slot.SessionNumber != "1" { // slot can't be the first 7:30am slot
+					valids = append(valids, slot)
+				}
+			}
 
 		}
 	}
