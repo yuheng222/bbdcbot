@@ -78,7 +78,7 @@ func validSlots(slots []DrivingSlot) []DrivingSlot {
 	valids := make([]DrivingSlot, 0)
 	for _, slot := range slots {
 		if slot.Date.Sub(time.Now()) < 10*(24*time.Hour) { // if slot is within 10 days of now
-			if slot.Date.Sub(time.Now()) > 12*time.Hour) { // if slot is more than 12 hours from now
+			if slot.Date.Sub(time.Now()) > 12*time.Hour { // if slot is more than 12 hours from now
 				if slot.SessionNumber != "1" { // slot can't be the first 7:30am slot
 					valids = append(valids, slot)
 				}
